@@ -4,6 +4,7 @@ import { Download, FileJson, FileSpreadsheet, RotateCcw, Trash2 } from "lucide-r
 import { useRef, useState } from "react";
 import type { AppData, Flashcard } from "@/lib/types";
 import { cardsToCsv } from "@/lib/csv";
+import { normalizeCard } from "@/lib/storage";
 import Modal from "./Modal";
 
 interface SettingsModalProps {
@@ -65,8 +66,11 @@ export default function SettingsModal({
           setMessage("That file doesn't look like a valid backup.");
           return;
         }
-        onRestore(parsed.cards);
-        setMessage(`Restored ${parsed.cards.length} cards.`);
+        // Backups from an older version may predate the spaced-repetition
+        // fields, so normalise them on the way in.
+        const restored = parsed.cards.map(normalizeCard);
+        onRestore(restored);
+        setMessage(`Restored ${restored.length} cards.`);
       } catch {
         setMessage("Could not read that JSON file.");
       }

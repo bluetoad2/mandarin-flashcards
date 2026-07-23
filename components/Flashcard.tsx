@@ -1,9 +1,10 @@
 "use client";
 
-import { ImageIcon, Volume2 } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import { useState } from "react";
 import type { Flashcard as FlashcardType } from "@/lib/types";
 import { speakMandarin, speechSupported } from "@/lib/speech";
+import { MAX_BOX } from "@/lib/srs";
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -14,6 +15,10 @@ interface FlashcardProps {
 export default function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
   const [imgError, setImgError] = useState(false);
   const canSpeak = speechSupported();
+  const hasImage = Boolean(card.imageUrl) && !imgError;
+  // Cards without an image would otherwise show a blank front, so the Hanzi
+  // itself becomes the prompt (falling back to English for English-only cards).
+  const prompt = card.hanzi || card.english;
 
   const handleSpeak = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,37 +40,47 @@ export default function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
         }}
         aria-label="Flashcard, press to flip"
       >
-        {/* FRONT — image + prompt */}
+        {/* FRONT — the prompt: image (when present) plus the Hanzi to recall */}
         <div className="flip-face">
-          <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-sky-100 bg-white/80 shadow-xl shadow-sky-100/60 backdrop-blur-md">
-            <div className="relative flex-1 bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100">
-              {card.imageUrl && !imgError ? (
-                // eslint-disable-next-line @next/next/no-img-element
+          <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-sky-100 bg-white/80 shadow-xl shadow-sky-100/60 backdrop-blur-md">
+            {hasImage && (
+              <div className="relative h-1/2 shrink-0 bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={card.imageUrl}
                   alt={card.english}
                   onError={() => setImgError(true)}
                   className="h-full w-full object-cover"
                 />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-sky-300">
-                  <ImageIcon className="h-16 w-16" strokeWidth={1.5} />
-                  <span className="text-sm font-medium text-sky-400">
-                    No image
-                  </span>
-                </div>
-              )}
-              {canSpeak && (
-                <button
-                  onClick={handleSpeak}
-                  aria-label="Play pronunciation"
-                  className="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-sky-600 shadow-lg shadow-sky-200/60 backdrop-blur transition hover:scale-105 hover:bg-white hover:text-sky-700 active:scale-95"
-                >
-                  <Volume2 className="h-6 w-6" />
-                </button>
+              </div>
+            )}
+
+            <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-gradient-to-br from-white via-sky-50/60 to-blue-50/60 px-6 py-6 text-center">
+              <p
+                className={`font-hanzi font-black leading-none text-slate-800 ${
+                  hasImage ? "text-6xl" : "text-8xl sm:text-9xl"
+                }`}
+              >
+                {prompt}
+              </p>
+              {!card.hanzi && (
+                <span className="text-sm font-medium text-sky-400">
+                  Recall the Chinese
+                </span>
               )}
             </div>
-            <div className="flex items-center justify-center gap-2 border-t border-sky-100 bg-white/70 px-6 py-5 text-center">
+
+            {canSpeak && (
+              <button
+                onClick={handleSpeak}
+                aria-label="Play pronunciation"
+                className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-sky-600 shadow-lg shadow-sky-200/60 backdrop-blur transition hover:scale-105 hover:bg-white hover:text-sky-700 active:scale-95"
+              >
+                <Volume2 className="h-6 w-6" />
+              </button>
+            )}
+
+            <div className="flex items-center justify-center gap-2 border-t border-sky-100 bg-white/70 px-6 py-4 text-center">
               <p className="text-sm font-medium text-sky-500">
                 Tap the card to reveal the answer
               </p>
@@ -76,9 +91,25 @@ export default function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
         {/* BACK — hanzi, pinyin, english */}
         <div className="flip-face flip-face--back">
           <div className="flex h-full flex-col items-center justify-center gap-4 rounded-3xl border border-sky-100 bg-gradient-to-br from-white via-sky-50 to-blue-50 px-6 text-center shadow-xl shadow-sky-100/60">
-            <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-600">
-              {card.deck}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-600">
+                {card.deck}
+              </span>
+              {/* Leitner progress: filled pips = how far up the boxes this card is */}
+              <span
+                className="flex items-center gap-1"
+                title={`Box ${card.box} of ${MAX_BOX}`}
+              >
+                {Array.from({ length: MAX_BOX }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      i < card.box ? "bg-mint-500" : "bg-sky-200"
+                    }`}
+                  />
+                ))}
+              </span>
+            </div>
             <p className="font-hanzi text-7xl font-black leading-none text-slate-800 sm:text-8xl">
               {card.hanzi}
             </p>

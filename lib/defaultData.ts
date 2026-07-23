@@ -17,6 +17,8 @@ function card(
     correct: 0,
     incorrect: 0,
     createdAt: Date.now() + seq,
+    box: 1,
+    dueAt: 0,
   };
 }
 

@@ -11,12 +11,17 @@ PapaParse · Lucide Icons**.
 
 ## ✨ Features
 
-- **3D flip flashcards** — image + audio on the front, Hanzi / Pinyin / English on the back.
+- **3D flip flashcards** — Hanzi (plus an image if you add one) on the front,
+  Pinyin / English on the back.
+- **Spaced repetition** — a 5-box Leitner scheduler. "Got It" moves a card up a
+  box (1 → 3 → 7 → 21 days); "Needs Review" drops it to box 1 and brings it back
+  later in the same session. **Due now** shows only what's ready to review.
 - **Mandarin TTS** — tap the speaker to hear `zh-CN` pronunciation (Web Speech API).
 - **CSV bulk import** — drag-and-drop a `.csv`, auto-detected column mapping, and a
   live preview before you commit. Numbered pinyin (`ni3 hao3`) auto-converts to `nǐ hǎo`.
+- **Full card management** — browse, search, edit, and delete any card.
 - **Deck management** — filter by deck, add cards by hand, defaults to 16 starter cards.
-- **Study tracking** — "Got It" / "Needs Review" grading with a mastery counter.
+- **Session summary** — score and accuracy when a review session finishes.
 - **Local-first storage** — everything lives in `localStorage`. Export/restore as JSON or CSV.
 - **Light-blue glassmorphism theme** — airy, minimalist, easy on the eyes for long sessions.
 
@@ -93,16 +98,18 @@ app/
   page.tsx          Main app: state, storage, deck filtering
   globals.css       Tailwind + 3D flip styles
 components/
-  Flashcard.tsx     3D flip card with image, TTS, and back face
-  StudyView.tsx     Card navigation, progress, Got It / Needs Review
-  DeckSelector.tsx  Deck filter pills
-  ImportModal.tsx   CSV upload → column mapping → preview → import
-  AddCardModal.tsx  Manual single-card form
-  SettingsModal.tsx Export/restore JSON & CSV, reset
-  Modal.tsx         Shared animated modal shell
+  Flashcard.tsx        3D flip card: Hanzi prompt, image, TTS, back face
+  StudyView.tsx        Session queue, progress, grading, session summary
+  DeckSelector.tsx     Deck filter pills
+  ImportModal.tsx      CSV upload → column mapping → preview → import
+  CardFormModal.tsx    Add / edit a single card
+  ManageCardsModal.tsx Browse, search, edit and delete cards
+  SettingsModal.tsx    Export/restore JSON & CSV, reset
+  Modal.tsx            Shared animated modal shell
 lib/
   types.ts          Shared types
-  storage.ts        localStorage load/save + seeding
+  storage.ts        localStorage load/save, seeding, card migration
+  srs.ts            Leitner scheduling + session queue rules
   defaultData.ts    16 starter cards
   csv.ts            Column auto-detect, row→card, CSV export
   pinyin.ts         Numbered → accented pinyin converter

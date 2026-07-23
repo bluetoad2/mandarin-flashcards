@@ -1,32 +1,35 @@
 "use client";
 
-import { Plus, Settings, Sparkles, Upload } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import type { CardDraft, Flashcard, StudyStatus } from "@/lib/types";
+import { CalendarClock, Layers3, List, Plus, Settings, Sparkles, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CardDraft, Flashcard, StudyMode } from "@/lib/types";
 import { createId, loadData, saveCards } from "@/lib/storage";
 import { DEFAULT_CARDS } from "@/lib/defaultData";
+import { demoteCard, isDue, promoteCard } from "@/lib/srs";
 import DeckSelector, { ALL_DECKS } from "@/components/DeckSelector";
 import StudyView from "@/components/StudyView";
 import ImportModal from "@/components/ImportModal";
-import AddCardModal from "@/components/AddCardModal";
+import CardFormModal from "@/components/CardFormModal";
+import ManageCardsModal from "@/components/ManageCardsModal";
 import SettingsModal from "@/components/SettingsModal";
 
 export default function Home() {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [activeDeck, setActiveDeck] = useState<string>(ALL_DECKS);
+  const [mode, setMode] = useState<StudyMode>("due");
   const [hydrated, setHydrated] = useState(false);
 
   const [importOpen, setImportOpen] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editCard, setEditCard] = useState<Flashcard | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Load once on mount (client-only, so localStorage is available).
   useEffect(() => {
     setCards(loadData().cards);
     setHydrated(true);
   }, []);
 
-  // Persist on every change after hydration.
   useEffect(() => {
     if (hydrated) saveCards(cards);
   }, [cards, hydrated]);
@@ -45,7 +48,7 @@ export default function Home() {
     return map;
   }, [cards]);
 
-  const visibleCards = useMemo(
+  const deckCards = useMemo(
     () =>
       activeDeck === ALL_DECKS
         ? cards
@@ -53,44 +56,74 @@ export default function Home() {
     [cards, activeDeck]
   );
 
-  const handleGrade = (cardId: string, status: StudyStatus) => {
+  const dueCards = useMemo(() => {
+    const now = Date.now();
+    return deckCards
+      .filter((c) => isDue(c, now))
+      .sort((a, b) => a.dueAt - b.dueAt);
+  }, [deckCards]);
+
+  const visibleCards = mode === "due" ? dueCards : deckCards;
+
+  /** Soonest upcoming review in this deck, for the "all caught up" message. */
+  const nextDueAt = useMemo(() => {
+    const upcoming = deckCards
+      .map((c) => c.dueAt)
+      .filter((t) => t > Date.now())
+      .sort((a, b) => a - b);
+    return upcoming.length > 0 ? upcoming[0] : null;
+  }, [deckCards]);
+
+  const handleGrade = useCallback((cardId: string, correct: boolean) => {
     setCards((prev) =>
-      prev.map((c) => {
-        if (c.id !== cardId) return c;
-        return {
-          ...c,
-          status,
-          correct: c.correct + (status === "mastered" ? 1 : 0),
-          incorrect: c.incorrect + (status === "learning" ? 1 : 0),
-        };
-      })
+      prev.map((c) =>
+        c.id === cardId ? (correct ? promoteCard(c) : demoteCard(c)) : c
+      )
+    );
+  }, []);
+
+  const draftToCard = (d: CardDraft): Flashcard => ({
+    id: createId(),
+    hanzi: d.hanzi,
+    pinyin: d.pinyin,
+    english: d.english,
+    imageUrl: d.imageUrl,
+    deck: d.deck,
+    status: "new",
+    correct: 0,
+    incorrect: 0,
+    createdAt: Date.now(),
+    box: 1,
+    dueAt: 0,
+  });
+
+  const handleImport = (drafts: CardDraft[]) => {
+    setCards((prev) => [...prev, ...drafts.map(draftToCard)]);
+    const importedDecks = new Set(drafts.map((d) => d.deck));
+    if (importedDecks.size === 1) setActiveDeck(Array.from(importedDecks)[0]);
+  };
+
+  const handleAdd = (draft: CardDraft) => handleImport([draft]);
+
+  const handleUpdate = (id: string, draft: CardDraft) => {
+    setCards((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              hanzi: draft.hanzi,
+              pinyin: draft.pinyin,
+              english: draft.english,
+              imageUrl: draft.imageUrl,
+              deck: draft.deck,
+            }
+          : c
+      )
     );
   };
 
-  const handleImport = (drafts: CardDraft[]) => {
-    const newCards: Flashcard[] = drafts.map((d) => ({
-      id: createId(),
-      hanzi: d.hanzi,
-      pinyin: d.pinyin,
-      english: d.english,
-      imageUrl: d.imageUrl,
-      deck: d.deck,
-      status: "new",
-      correct: 0,
-      incorrect: 0,
-      createdAt: Date.now(),
-    }));
-    setCards((prev) => [...prev, ...newCards]);
-    // Jump to the deck we just imported into, if consistent.
-    const importedDecks = new Set(drafts.map((d) => d.deck));
-    if (importedDecks.size === 1) {
-      setActiveDeck(Array.from(importedDecks)[0]);
-    }
-  };
-
-  const handleAdd = (draft: CardDraft) => {
-    handleImport([draft]);
-  };
+  const handleDelete = (id: string) =>
+    setCards((prev) => prev.filter((c) => c.id !== id));
 
   const handleRestore = (restored: Flashcard[]) => {
     setCards(restored);
@@ -98,15 +131,22 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    // Fresh copies so ids don't collide across resets.
-    const fresh = DEFAULT_CARDS.map((c) => ({ ...c, id: createId() }));
-    setCards(fresh);
+    setCards(DEFAULT_CARDS.map((c) => ({ ...c, id: createId() })));
     setActiveDeck(ALL_DECKS);
+  };
+
+  const openAdd = () => {
+    setEditCard(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (card: Flashcard) => {
+    setEditCard(card);
+    setFormOpen(true);
   };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
-      {/* Decorative blur blobs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
         <div className="absolute -right-20 top-40 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
@@ -114,7 +154,6 @@ export default function Home() {
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-xl flex-col px-4 pb-10 pt-6 sm:px-6">
-        {/* Header */}
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-lg shadow-sky-300/50">
@@ -129,16 +168,24 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Settings"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-100 bg-white/70 text-sky-600 shadow-sm backdrop-blur transition hover:bg-white hover:text-sky-800"
-          >
-            <Settings className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setManageOpen(true)}
+              aria-label="Manage cards"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-100 bg-white/70 text-sky-600 shadow-sm backdrop-blur transition hover:bg-white hover:text-sky-800"
+            >
+              <List className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Settings"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-100 bg-white/70 text-sky-600 shadow-sm backdrop-blur transition hover:bg-white hover:text-sky-800"
+            >
+              <Settings className="h-5 w-5" />
+            </button>
+          </div>
         </header>
 
-        {/* Action buttons */}
         <div className="mb-5 grid grid-cols-2 gap-3">
           <button
             onClick={() => setImportOpen(true)}
@@ -148,7 +195,7 @@ export default function Home() {
             Import CSV
           </button>
           <button
-            onClick={() => setAddOpen(true)}
+            onClick={openAdd}
             className="flex items-center justify-center gap-2 rounded-2xl border border-sky-100 bg-white/80 px-4 py-3 font-semibold text-sky-600 shadow-sm backdrop-blur transition hover:bg-white active:scale-[0.98]"
           >
             <Plus className="h-5 w-5" />
@@ -156,8 +203,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Deck selector */}
-        <div className="mb-5">
+        <div className="mb-4">
           <DeckSelector
             decks={decks}
             active={activeDeck}
@@ -166,13 +212,55 @@ export default function Home() {
           />
         </div>
 
-        {/* Study area */}
+        {/* Study mode: spaced-repetition queue vs. the whole deck */}
+        <div className="mb-5 flex gap-2 rounded-2xl border border-sky-100 bg-white/60 p-1">
+          <button
+            onClick={() => setMode("due")}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+              mode === "due"
+                ? "bg-sky-500 text-white shadow-md shadow-sky-200"
+                : "text-sky-600 hover:bg-sky-50"
+            }`}
+          >
+            <CalendarClock className="h-4 w-4" />
+            Due now
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${
+                mode === "due" ? "bg-white/25" : "bg-sky-100"
+              }`}
+            >
+              {dueCards.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setMode("all")}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+              mode === "all"
+                ? "bg-sky-500 text-white shadow-md shadow-sky-200"
+                : "text-sky-600 hover:bg-sky-50"
+            }`}
+          >
+            <Layers3 className="h-4 w-4" />
+            All cards
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${
+                mode === "all" ? "bg-white/25" : "bg-sky-100"
+              }`}
+            >
+              {deckCards.length}
+            </span>
+          </button>
+        </div>
+
         <div className="flex-1">
           {hydrated ? (
             <StudyView
               cards={visibleCards}
               deckName={activeDeck}
+              mode={mode}
+              nextDueAt={nextDueAt}
               onGrade={handleGrade}
+              onStudyAll={() => setMode("all")}
             />
           ) : (
             <div className="h-[26rem] w-full animate-pulse rounded-3xl border border-sky-100 bg-white/50 sm:h-[30rem]" />
@@ -189,11 +277,20 @@ export default function Home() {
         onClose={() => setImportOpen(false)}
         onImport={handleImport}
       />
-      <AddCardModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
+      <ManageCardsModal
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
+        cards={cards}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+      />
+      <CardFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
         decks={decks}
+        editCard={editCard}
         onAdd={handleAdd}
+        onUpdate={handleUpdate}
       />
       <SettingsModal
         open={settingsOpen}

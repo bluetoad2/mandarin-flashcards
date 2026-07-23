@@ -13,7 +13,14 @@ export interface Flashcard {
   /** Number of times marked "Needs Review". */
   incorrect: number;
   createdAt: number;
+  /** Leitner box, 1–5. Higher box = longer wait before the next review. */
+  box: number;
+  /** Timestamp when this card is next due. 0 means "due now". */
+  dueAt: number;
 }
+
+/** Which pool of cards the study session draws from. */
+export type StudyMode = "due" | "all";
 
 export interface AppData {
   version: number;
