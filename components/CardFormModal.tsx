@@ -1,6 +1,5 @@
 "use client";
 
-import { Plus, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CardDraft, Flashcard } from "@/lib/types";
 import { toAccentedPinyin } from "@/lib/pinyin";
@@ -17,8 +16,8 @@ interface CardFormModalProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-sky-100 bg-sky-50/50 px-4 py-2.5 text-slate-800 outline-none transition placeholder:text-sky-300 focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-200";
-const labelClass = "mb-1.5 block text-sm font-semibold text-sky-800";
+  "w-full border border-ink-200 bg-paper-bright px-3 py-2.5 text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-cinnabar-500";
+const labelClass = "label-caps mb-1.5 block text-ink-400";
 
 const EMPTY = { hanzi: "", pinyin: "", english: "", imageUrl: "", deck: "" };
 
@@ -78,14 +77,16 @@ export default function CardFormModal({
       onClose={onClose}
       title={isEdit ? "Edit card" : "Add a card"}
       subtitle={
-        isEdit ? "Update this card's details" : "Create a single flashcard by hand"
+        isEdit
+          ? "Update this card's details"
+          : "Create a single flashcard by hand"
       }
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className={labelClass}>Hanzi (Chinese)</label>
+          <label className={labelClass}>Hanzi</label>
           <input
-            className={`${inputClass} font-hanzi text-lg`}
+            className={`${inputClass} font-hanzi text-xl`}
             value={form.hanzi}
             onChange={(e) => set("hanzi", e.target.value)}
             placeholder="你好"
@@ -93,13 +94,10 @@ export default function CardFormModal({
         </div>
         <div>
           <label className={labelClass}>
-            Pinyin{" "}
-            <span className="font-normal text-sky-400">
-              (numbers like ni3 auto-convert)
-            </span>
+            Pinyin <span className="normal-case tracking-normal">(ni3 auto-converts)</span>
           </label>
           <input
-            className={inputClass}
+            className={`${inputClass} font-serif italic`}
             value={form.pinyin}
             onChange={(e) => set("pinyin", e.target.value)}
             placeholder="nǐ hǎo"
@@ -140,7 +138,7 @@ export default function CardFormModal({
         </div>
 
         {error && (
-          <p className="rounded-lg bg-coral-500/10 px-3 py-2 text-sm font-medium text-coral-600">
+          <p className="border-l-2 border-cinnabar-500 bg-cinnabar-50 px-3 py-2 text-sm text-cinnabar-700">
             {error}
           </p>
         )}
@@ -149,25 +147,15 @@ export default function CardFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-xl border border-sky-100 bg-white px-4 py-3 font-semibold text-sky-600 transition hover:bg-sky-50"
+            className="flex-1 border border-ink-200 px-4 py-3 text-sm font-medium text-ink-600 transition hover:border-ink-800 hover:text-ink-900"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-3 font-semibold text-white shadow-lg shadow-sky-300/50 transition hover:bg-sky-600 active:scale-[0.98]"
+            className="flex-1 border border-ink-800 bg-ink-900 px-4 py-3 text-sm font-medium text-paper transition hover:bg-ink-800 active:scale-[0.98]"
           >
-            {isEdit ? (
-              <>
-                <Save className="h-5 w-5" />
-                Save changes
-              </>
-            ) : (
-              <>
-                <Plus className="h-5 w-5" />
-                Add card
-              </>
-            )}
+            {isEdit ? "Save changes" : "Add card"}
           </button>
         </div>
       </form>

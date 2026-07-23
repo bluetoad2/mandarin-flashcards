@@ -1,6 +1,5 @@
 "use client";
 
-import { Download, FileJson, FileSpreadsheet, RotateCcw, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import type { AppData, Flashcard } from "@/lib/types";
 import { cardsToCsv } from "@/lib/csv";
@@ -24,6 +23,9 @@ function download(filename: string, content: string, type: string) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+const outlineButton =
+  "border border-ink-200 px-4 py-3 text-sm font-medium text-ink-600 transition hover:border-ink-800 hover:text-ink-900 active:scale-[0.98]";
 
 export default function SettingsModal({
   open,
@@ -87,52 +89,36 @@ export default function SettingsModal({
       title="Settings & backup"
       subtitle="Your data lives only in this browser"
     >
-      <div className="flex flex-col gap-5">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-sky-100 bg-sky-50/50 px-4 py-3">
-            <p className="text-2xl font-black text-sky-700">{cards.length}</p>
-            <p className="text-sm text-sky-500">Total cards</p>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-stretch divide-x divide-ink-200 border border-ink-200">
+          <div className="flex-1 px-5 py-3">
+            <p className="font-serif text-3xl text-ink-900">{cards.length}</p>
+            <p className="label-caps mt-1 text-ink-400">Total cards</p>
           </div>
-          <div className="rounded-2xl border border-mint-400/20 bg-mint-500/10 px-4 py-3">
-            <p className="text-2xl font-black text-mint-600">{mastered}</p>
-            <p className="text-sm text-mint-600/80">Mastered</p>
+          <div className="flex-1 px-5 py-3">
+            <p className="font-serif text-3xl text-jade-600">{mastered}</p>
+            <p className="label-caps mt-1 text-ink-400">Mastered</p>
           </div>
         </div>
 
-        {/* Export */}
         <div>
-          <p className="mb-2 text-sm font-semibold text-sky-800">
-            Export / backup
-          </p>
+          <p className="label-caps mb-2 text-ink-400">Export a backup</p>
           <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={exportJson}
-              className="flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-3 font-semibold text-sky-600 transition hover:bg-sky-50 active:scale-[0.98]"
-            >
-              <FileJson className="h-5 w-5" />
+            <button onClick={exportJson} className={outlineButton}>
               JSON
             </button>
-            <button
-              onClick={exportCsv}
-              className="flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-3 font-semibold text-sky-600 transition hover:bg-sky-50 active:scale-[0.98]"
-            >
-              <FileSpreadsheet className="h-5 w-5" />
+            <button onClick={exportCsv} className={outlineButton}>
               CSV
             </button>
           </div>
         </div>
 
-        {/* Restore */}
         <div>
-          <p className="mb-2 text-sm font-semibold text-sky-800">
-            Restore from JSON backup
-          </p>
+          <p className="label-caps mb-2 text-ink-400">Restore from JSON</p>
           <button
             onClick={() => fileRef.current?.click()}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-3 font-semibold text-sky-600 transition hover:bg-sky-50 active:scale-[0.98]"
+            className={`w-full ${outlineButton}`}
           >
-            <Download className="h-5 w-5" />
             Choose backup file
           </button>
           <input
@@ -142,40 +128,36 @@ export default function SettingsModal({
             className="hidden"
             onChange={(e) => handleRestoreFile(e.target.files)}
           />
-          <p className="mt-1.5 text-xs text-sky-400">
+          <p className="mt-2 text-xs text-ink-400">
             Restoring replaces all cards currently in this browser.
           </p>
         </div>
 
         {message && (
-          <p className="rounded-lg bg-sky-100 px-3 py-2 text-sm font-medium text-sky-700">
+          <p className="border-l-2 border-ink-800 bg-ink-50 px-3 py-2 text-sm text-ink-700">
             {message}
           </p>
         )}
 
-        {/* Danger zone */}
-        <div className="rounded-2xl border border-coral-400/20 bg-coral-500/5 p-4">
-          <p className="mb-2 text-sm font-semibold text-coral-600">
-            Reset everything
-          </p>
+        <div className="border-l-2 border-cinnabar-500 pl-4">
+          <p className="label-caps mb-2 text-cinnabar-600">Reset everything</p>
           {!confirmReset ? (
             <button
               onClick={() => setConfirmReset(true)}
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-coral-600 transition hover:bg-coral-500/10"
+              className="text-sm font-medium text-cinnabar-600 transition hover:text-cinnabar-700"
             >
-              <Trash2 className="h-4 w-4" />
               Restore default cards
             </button>
           ) : (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-coral-600/90">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-ink-600">
                 This deletes your custom cards and progress, then reloads the 16
                 starter cards. Consider exporting a backup first.
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setConfirmReset(false)}
-                  className="flex-1 rounded-xl border border-sky-100 bg-white px-3 py-2 text-sm font-semibold text-sky-600"
+                  className="flex-1 border border-ink-200 px-3 py-2 text-sm font-medium text-ink-600 transition hover:border-ink-800"
                 >
                   Cancel
                 </button>
@@ -185,9 +167,8 @@ export default function SettingsModal({
                     setConfirmReset(false);
                     setMessage("Reset to default cards.");
                   }}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-coral-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-coral-600"
+                  className="flex-1 border border-cinnabar-500 bg-cinnabar-500 px-3 py-2 text-sm font-medium text-paper-card transition hover:bg-cinnabar-600"
                 >
-                  <RotateCcw className="h-4 w-4" />
                   Yes, reset
                 </button>
               </div>

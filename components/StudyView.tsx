@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, PartyPopper, RotateCcw, Sparkles, X } from "lucide-react";
+import { Check, RotateCcw, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Flashcard as FlashcardType, StudyMode } from "@/lib/types";
 import { formatDueIn, nextQueue, skipInQueue } from "@/lib/srs";
@@ -76,7 +76,6 @@ export default function StudyView({
   }, [queue, byId]);
 
   const answered = stats.right + stats.wrong;
-
   const restart = () => setSessionKey((k) => k + 1);
 
   const grade = (correct: boolean) => {
@@ -103,33 +102,28 @@ export default function StudyView({
   if (cards.length === 0) {
     const caughtUp = mode === "due" && nextDueAt !== null;
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-sky-200 bg-white/60 px-6 py-16 text-center">
+      <div className="flex flex-col items-center justify-center gap-3 border border-dashed border-ink-200 px-6 py-20 text-center">
         {caughtUp ? (
           <>
-            <PartyPopper className="h-10 w-10 text-mint-500" />
-            <p className="text-lg font-semibold text-sky-800">All caught up!</p>
-            <p className="max-w-xs text-sm text-sky-500">
-              Nothing is due in this deck right now. Next review{" "}
-              <span className="font-semibold text-sky-600">
-                {formatDueIn(nextDueAt)}
-              </span>
-              .
+            <p className="font-hanzi text-5xl text-cinnabar-500">好</p>
+            <p className="mt-1 text-lg text-ink-800">All caught up</p>
+            <p className="max-w-xs text-sm text-ink-500">
+              Nothing is due in this deck. Next review{" "}
+              <span className="text-ink-800">{formatDueIn(nextDueAt)}</span>.
             </p>
             <button
               onClick={onStudyAll}
-              className="mt-2 rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-300/50 transition hover:bg-sky-600 active:scale-95"
+              className="mt-2 border border-ink-800 bg-ink-900 px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-ink-800 active:scale-[0.98]"
             >
               Study ahead anyway
             </button>
           </>
         ) : (
           <>
-            <Sparkles className="h-10 w-10 text-sky-300" />
-            <p className="text-lg font-semibold text-sky-800">
-              No cards here yet
-            </p>
-            <p className="max-w-xs text-sm text-sky-500">
-              Add a card manually or import a CSV to start studying this deck.
+            <p className="font-hanzi text-5xl text-ink-300">空</p>
+            <p className="mt-1 text-lg text-ink-800">No cards here yet</p>
+            <p className="max-w-xs text-sm text-ink-500">
+              Add a card by hand or import a CSV to start studying this deck.
             </p>
           </>
         )}
@@ -140,28 +134,31 @@ export default function StudyView({
   // ---- Session complete ---------------------------------------------------
 
   if (!card) {
-    const accuracy = answered > 0 ? Math.round((stats.right / answered) * 100) : 0;
+    const accuracy =
+      answered > 0 ? Math.round((stats.right / answered) * 100) : 0;
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-sky-100 bg-white/80 px-6 py-14 text-center shadow-xl shadow-sky-100/60">
-        <PartyPopper className="h-12 w-12 text-mint-500" />
-        <p className="text-xl font-black text-sky-900">Session complete</p>
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-mint-500/10 px-5 py-3">
-            <p className="text-2xl font-black text-mint-600">{stats.right}</p>
-            <p className="text-xs font-medium text-mint-600/80">Got it</p>
+      <div className="flex flex-col items-center justify-center gap-5 border border-ink-200 bg-paper-card px-6 py-14 text-center">
+        <p className="font-hanzi text-5xl text-cinnabar-500">完</p>
+        <p className="label-caps text-ink-400">Session complete</p>
+        <div className="flex items-stretch divide-x divide-ink-200 border border-ink-200">
+          <div className="px-6 py-3">
+            <p className="font-serif text-3xl text-jade-600">{stats.right}</p>
+            <p className="label-caps mt-1 text-ink-400">Got it</p>
           </div>
-          <div className="rounded-2xl bg-coral-500/10 px-5 py-3">
-            <p className="text-2xl font-black text-coral-600">{stats.wrong}</p>
-            <p className="text-xs font-medium text-coral-600/80">Missed</p>
+          <div className="px-6 py-3">
+            <p className="font-serif text-3xl text-cinnabar-500">
+              {stats.wrong}
+            </p>
+            <p className="label-caps mt-1 text-ink-400">Missed</p>
           </div>
-          <div className="rounded-2xl bg-sky-100 px-5 py-3">
-            <p className="text-2xl font-black text-sky-700">{accuracy}%</p>
-            <p className="text-xs font-medium text-sky-500">Accuracy</p>
+          <div className="px-6 py-3">
+            <p className="font-serif text-3xl text-ink-800">{accuracy}%</p>
+            <p className="label-caps mt-1 text-ink-400">Accuracy</p>
           </div>
         </div>
         <button
           onClick={restart}
-          className="mt-1 flex items-center gap-2 rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-300/50 transition hover:bg-sky-600 active:scale-95"
+          className="flex items-center gap-2 border border-ink-800 bg-ink-900 px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-ink-800 active:scale-[0.98]"
         >
           <RotateCcw className="h-4 w-4" />
           Study again
@@ -176,27 +173,26 @@ export default function StudyView({
   const progress = total > 0 ? (stats.right / total) * 100 : 0;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between px-1 text-sm">
-        <span className="font-semibold text-sky-700">
-          {queue.length}
-          <span className="text-sky-400"> left</span>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between">
+        <span className="label-caps text-ink-400">
+          {queue.length} remaining
         </span>
-        <span className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 font-semibold text-mint-600">
+        <span className="flex items-center gap-4 text-sm">
+          <span className="flex items-center gap-1.5 text-jade-600">
             <Check className="h-3.5 w-3.5" />
             {stats.right}
           </span>
-          <span className="flex items-center gap-1.5 font-semibold text-coral-500">
+          <span className="flex items-center gap-1.5 text-cinnabar-500">
             <X className="h-3.5 w-3.5" />
             {stats.wrong}
           </span>
         </span>
       </div>
 
-      <div className="h-2 w-full overflow-hidden rounded-full bg-sky-100">
+      <div className="h-px w-full bg-ink-200">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500 transition-all duration-500"
+          className="h-px bg-ink-800 transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -205,10 +201,10 @@ export default function StudyView({
         <AnimatePresence mode="wait">
           <motion.div
             key={card.id}
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -60 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
           >
             <Flashcard
               card={card}
@@ -222,26 +218,25 @@ export default function StudyView({
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => grade(false)}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-coral-400/30 bg-coral-500/10 px-4 py-4 font-semibold text-coral-600 transition hover:bg-coral-500/20 active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 border border-cinnabar-500 px-4 py-3.5 font-medium text-cinnabar-600 transition hover:bg-cinnabar-50 active:scale-[0.98]"
         >
-          <X className="h-5 w-5" />
-          Needs Review
+          <X className="h-[18px] w-[18px]" />
+          Needs review
         </button>
         <button
           onClick={() => grade(true)}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-mint-400/30 bg-mint-500/10 px-4 py-4 font-semibold text-mint-600 transition hover:bg-mint-500/20 active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 border border-jade-600 bg-jade-600 px-4 py-3.5 font-medium text-paper transition hover:bg-jade-700 active:scale-[0.98]"
         >
-          <Check className="h-5 w-5" />
-          Got It
+          <Check className="h-[18px] w-[18px]" />
+          Got it
         </button>
       </div>
 
       <div className="flex items-center justify-center">
         <button
           onClick={skip}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-sky-500 transition hover:bg-sky-50 hover:text-sky-700"
+          className="label-caps px-4 py-2 text-ink-400 transition hover:text-ink-700"
         >
-          <RotateCcw className="h-4 w-4" />
           Skip
         </button>
       </div>

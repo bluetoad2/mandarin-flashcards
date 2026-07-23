@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, Layers3, List, Plus, Settings, Sparkles, Upload } from "lucide-react";
+import { List, Plus, Settings, Upload } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CardDraft, Flashcard, StudyMode } from "@/lib/types";
 import { createId, loadData, saveCards } from "@/lib/storage";
@@ -145,65 +145,64 @@ export default function Home() {
     setFormOpen(true);
   };
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
-        <div className="absolute -right-20 top-40 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-cyan-200/30 blur-3xl" />
-      </div>
+  const iconButton =
+    "flex h-9 w-9 items-center justify-center border border-ink-200 text-ink-500 transition hover:border-ink-800 hover:text-ink-900";
 
-      <div className="relative mx-auto flex min-h-screen max-w-xl flex-col px-4 pb-10 pt-6 sm:px-6">
-        <header className="mb-6 flex items-center justify-between">
+  return (
+    <main className="min-h-screen bg-paper">
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col px-5 pb-12 pt-7 sm:px-6">
+        {/* Masthead */}
+        <header className="mb-7 flex items-center justify-between border-b border-ink-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-lg shadow-sky-300/50">
-              <Sparkles className="h-6 w-6" />
-            </div>
+            {/* Seal mark */}
+            <span className="flex h-10 w-10 items-center justify-center bg-cinnabar-500 font-hanzi text-xl text-paper-card">
+              学
+            </span>
             <div>
-              <h1 className="text-xl font-black tracking-tight text-sky-900">
+              <h1 className="font-serif text-2xl leading-none text-ink-900">
                 Mandarin
               </h1>
-              <p className="-mt-0.5 text-sm font-medium text-sky-500">
-                Flashcards
-              </p>
+              <p className="label-caps mt-1 text-ink-400">Flashcards</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setManageOpen(true)}
               aria-label="Manage cards"
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-100 bg-white/70 text-sky-600 shadow-sm backdrop-blur transition hover:bg-white hover:text-sky-800"
+              className={iconButton}
             >
-              <List className="h-5 w-5" />
+              <List className="h-[18px] w-[18px]" />
             </button>
             <button
               onClick={() => setSettingsOpen(true)}
               aria-label="Settings"
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-100 bg-white/70 text-sky-600 shadow-sm backdrop-blur transition hover:bg-white hover:text-sky-800"
+              className={iconButton}
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-[18px] w-[18px]" />
             </button>
           </div>
         </header>
 
-        <div className="mb-5 grid grid-cols-2 gap-3">
+        {/* Primary actions */}
+        <div className="mb-6 grid grid-cols-2 gap-3">
           <button
             onClick={() => setImportOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 px-4 py-3 font-semibold text-white shadow-lg shadow-sky-300/50 transition hover:brightness-105 active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 border border-ink-800 bg-ink-900 px-4 py-3 text-sm font-medium text-paper transition hover:bg-ink-800 active:scale-[0.98]"
           >
-            <Upload className="h-5 w-5" />
+            <Upload className="h-[18px] w-[18px]" />
             Import CSV
           </button>
           <button
             onClick={openAdd}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-sky-100 bg-white/80 px-4 py-3 font-semibold text-sky-600 shadow-sm backdrop-blur transition hover:bg-white active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 border border-ink-300 px-4 py-3 text-sm font-medium text-ink-700 transition hover:border-ink-800 hover:text-ink-900 active:scale-[0.98]"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-[18px] w-[18px]" />
             Add card
           </button>
         </div>
 
-        <div className="mb-4">
+        {/* Decks */}
+        <div className="mb-5">
           <DeckSelector
             decks={decks}
             active={activeDeck}
@@ -213,45 +212,34 @@ export default function Home() {
         </div>
 
         {/* Study mode: spaced-repetition queue vs. the whole deck */}
-        <div className="mb-5 flex gap-2 rounded-2xl border border-sky-100 bg-white/60 p-1">
-          <button
-            onClick={() => setMode("due")}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              mode === "due"
-                ? "bg-sky-500 text-white shadow-md shadow-sky-200"
-                : "text-sky-600 hover:bg-sky-50"
-            }`}
-          >
-            <CalendarClock className="h-4 w-4" />
-            Due now
-            <span
-              className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${
-                mode === "due" ? "bg-white/25" : "bg-sky-100"
+        <div className="mb-6 flex items-center gap-5">
+          {(
+            [
+              ["due", "Due now", dueCards.length],
+              ["all", "All cards", deckCards.length],
+            ] as const
+          ).map(([value, label, count]) => (
+            <button
+              key={value}
+              onClick={() => setMode(value)}
+              className={`flex items-center gap-2 text-sm transition ${
+                mode === value
+                  ? "text-ink-900"
+                  : "text-ink-400 hover:text-ink-700"
               }`}
             >
-              {dueCards.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setMode("all")}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              mode === "all"
-                ? "bg-sky-500 text-white shadow-md shadow-sky-200"
-                : "text-sky-600 hover:bg-sky-50"
-            }`}
-          >
-            <Layers3 className="h-4 w-4" />
-            All cards
-            <span
-              className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${
-                mode === "all" ? "bg-white/25" : "bg-sky-100"
-              }`}
-            >
-              {deckCards.length}
-            </span>
-          </button>
+              <span
+                className={`h-1.5 w-1.5 ${
+                  mode === value ? "bg-cinnabar-500" : "bg-ink-200"
+                }`}
+              />
+              {label}
+              <span className="font-serif text-xs text-ink-400">{count}</span>
+            </button>
+          ))}
         </div>
 
+        {/* Study area */}
         <div className="flex-1">
           {hydrated ? (
             <StudyView
@@ -263,12 +251,14 @@ export default function Home() {
               onStudyAll={() => setMode("all")}
             />
           ) : (
-            <div className="h-[26rem] w-full animate-pulse rounded-3xl border border-sky-100 bg-white/50 sm:h-[30rem]" />
+            <div className="h-[26rem] w-full animate-pulse border border-ink-200 bg-paper-card sm:h-[30rem]" />
           )}
         </div>
 
-        <footer className="mt-8 text-center text-xs text-sky-400">
-          Saved locally in your browser · no account needed
+        <footer className="mt-10 border-t border-ink-200 pt-4 text-center">
+          <p className="label-caps text-ink-300">
+            Stored locally · no account needed
+          </p>
         </footer>
       </div>
 

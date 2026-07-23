@@ -40,11 +40,11 @@ export default function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
         }}
         aria-label="Flashcard, press to flip"
       >
-        {/* FRONT — the prompt: image (when present) plus the Hanzi to recall */}
+        {/* FRONT — the prompt: the character itself, given room to breathe */}
         <div className="flip-face">
-          <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-sky-100 bg-white/80 shadow-xl shadow-sky-100/60 backdrop-blur-md">
+          <div className="relative flex h-full flex-col overflow-hidden border border-ink-200 bg-paper-card">
             {hasImage && (
-              <div className="relative h-1/2 shrink-0 bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100">
+              <div className="relative h-[42%] shrink-0 border-b border-ink-200 bg-ink-50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={card.imageUrl}
@@ -55,73 +55,67 @@ export default function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
               </div>
             )}
 
-            <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-gradient-to-br from-white via-sky-50/60 to-blue-50/60 px-6 py-6 text-center">
+            <div className="flex flex-1 items-center justify-center px-6">
               <p
-                className={`font-hanzi font-black leading-none text-slate-800 ${
-                  hasImage ? "text-6xl" : "text-8xl sm:text-9xl"
+                className={`font-hanzi leading-none text-ink-900 ${
+                  hasImage ? "text-7xl" : "text-[7rem] sm:text-[9rem]"
                 }`}
               >
                 {prompt}
               </p>
-              {!card.hanzi && (
-                <span className="text-sm font-medium text-sky-400">
-                  Recall the Chinese
-                </span>
-              )}
             </div>
 
             {canSpeak && (
               <button
                 onClick={handleSpeak}
                 aria-label="Play pronunciation"
-                className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-sky-600 shadow-lg shadow-sky-200/60 backdrop-blur transition hover:scale-105 hover:bg-white hover:text-sky-700 active:scale-95"
+                className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center border border-ink-200 bg-paper-card text-ink-500 transition hover:border-cinnabar-500 hover:text-cinnabar-500 active:scale-95"
               >
-                <Volume2 className="h-6 w-6" />
+                <Volume2 className="h-[18px] w-[18px]" />
               </button>
             )}
 
-            <div className="flex items-center justify-center gap-2 border-t border-sky-100 bg-white/70 px-6 py-4 text-center">
-              <p className="text-sm font-medium text-sky-500">
-                Tap the card to reveal the answer
-              </p>
+            <div className="border-t border-ink-200 px-6 py-3.5 text-center">
+              <p className="label-caps text-ink-400">Tap to reveal</p>
             </div>
           </div>
         </div>
 
-        {/* BACK — hanzi, pinyin, english */}
+        {/* BACK — the answer */}
         <div className="flip-face flip-face--back">
-          <div className="flex h-full flex-col items-center justify-center gap-4 rounded-3xl border border-sky-100 bg-gradient-to-br from-white via-sky-50 to-blue-50 px-6 text-center shadow-xl shadow-sky-100/60">
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-600">
-                {card.deck}
-              </span>
-              {/* Leitner progress: filled pips = how far up the boxes this card is */}
+          <div className="relative flex h-full flex-col items-center justify-center gap-5 border border-ink-800 bg-paper-card px-6 text-center">
+            <div className="absolute left-0 right-0 top-0 flex items-center justify-between border-b border-ink-200 px-4 py-3">
+              <span className="label-caps text-ink-400">{card.deck}</span>
+              {/* Leitner progress: filled marks = how far up the boxes this card is */}
               <span
-                className="flex items-center gap-1"
+                className="flex items-center gap-[3px]"
                 title={`Box ${card.box} of ${MAX_BOX}`}
               >
                 {Array.from({ length: MAX_BOX }).map((_, i) => (
                   <span
                     key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      i < card.box ? "bg-mint-500" : "bg-sky-200"
+                    className={`h-[3px] w-3 ${
+                      i < card.box ? "bg-jade-600" : "bg-ink-200"
                     }`}
                   />
                 ))}
               </span>
             </div>
-            <p className="font-hanzi text-7xl font-black leading-none text-slate-800 sm:text-8xl">
+
+            <p className="font-hanzi text-6xl leading-none text-ink-900 sm:text-7xl">
               {card.hanzi}
             </p>
-            <p className="text-2xl font-semibold text-sky-600 sm:text-3xl">
+            <p className="font-serif text-3xl italic text-cinnabar-500 sm:text-4xl">
               {card.pinyin}
             </p>
-            <p className="text-lg text-slate-600 sm:text-xl">{card.english}</p>
+            <div className="h-px w-12 bg-ink-200" />
+            <p className="text-lg text-ink-600 sm:text-xl">{card.english}</p>
+
             {canSpeak && (
               <button
                 onClick={handleSpeak}
                 aria-label="Play pronunciation"
-                className="mt-1 flex items-center gap-2 rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-300/50 transition hover:bg-sky-600 active:scale-95"
+                className="mt-1 flex items-center gap-2 border border-ink-300 px-4 py-2 text-sm font-medium text-ink-600 transition hover:border-cinnabar-500 hover:text-cinnabar-500 active:scale-95"
               >
                 <Volume2 className="h-4 w-4" />
                 Listen

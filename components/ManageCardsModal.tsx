@@ -49,50 +49,47 @@ export default function ManageCardsModal({
     >
       <div className="flex flex-col gap-4">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sky-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-300" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search hanzi, pinyin, English or deck…"
-            className="w-full rounded-xl border border-sky-100 bg-sky-50/50 py-2.5 pl-10 pr-4 text-slate-800 outline-none transition placeholder:text-sky-300 focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-200"
+            className="w-full border border-ink-200 bg-paper-bright py-2.5 pl-9 pr-3 text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-cinnabar-500"
           />
         </div>
 
         {filtered.length === 0 ? (
-          <p className="py-10 text-center text-sm text-sky-400">
+          <p className="py-12 text-center text-sm text-ink-400">
             No cards match “{query}”.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="divide-y divide-ink-100 border-y border-ink-100">
             {filtered.map((card) => (
-              <li
-                key={card.id}
-                className="flex items-center gap-3 rounded-2xl border border-sky-100 bg-white/70 px-3 py-2.5"
-              >
+              <li key={card.id} className="flex items-center gap-3 py-2.5">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-hanzi text-lg font-bold text-slate-800">
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="font-hanzi text-lg text-ink-900">
                       {card.hanzi || "—"}
                     </span>
-                    <span className="truncate text-sm text-sky-600">
+                    <span className="truncate font-serif text-sm italic text-cinnabar-500">
                       {card.pinyin}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm text-slate-500">
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="truncate text-sm text-ink-500">
                       {card.english || "—"}
                     </span>
-                    <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-600">
+                    <span className="label-caps shrink-0 text-ink-300">
                       {card.deck}
                     </span>
                   </div>
                 </div>
 
                 {confirmId === card.id ? (
-                  <div className="flex shrink-0 items-center gap-1.5">
+                  <div className="flex shrink-0 items-center gap-2">
                     <button
                       onClick={() => setConfirmId(null)}
-                      className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-sky-600 transition hover:bg-sky-50"
+                      className="px-2 py-1 text-xs font-medium text-ink-500 transition hover:text-ink-900"
                     >
                       Cancel
                     </button>
@@ -101,7 +98,7 @@ export default function ManageCardsModal({
                         onDelete(card.id);
                         setConfirmId(null);
                       }}
-                      className="rounded-lg bg-coral-500 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-coral-600"
+                      className="border border-cinnabar-500 bg-cinnabar-500 px-2.5 py-1 text-xs font-medium text-paper-card transition hover:bg-cinnabar-600"
                     >
                       Delete
                     </button>
@@ -111,14 +108,14 @@ export default function ManageCardsModal({
                     <button
                       onClick={() => onEdit(card)}
                       aria-label={`Edit ${card.hanzi || card.english}`}
-                      className="rounded-lg p-2 text-sky-500 transition hover:bg-sky-50 hover:text-sky-700"
+                      className="p-2 text-ink-400 transition hover:text-ink-900"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setConfirmId(card.id)}
                       aria-label={`Delete ${card.hanzi || card.english}`}
-                      className="rounded-lg p-2 text-coral-400 transition hover:bg-coral-500/10 hover:text-coral-600"
+                      className="p-2 text-ink-400 transition hover:text-cinnabar-500"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

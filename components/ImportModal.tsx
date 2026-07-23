@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FileUp, UploadCloud } from "lucide-react";
+import { UploadCloud } from "lucide-react";
 import Papa from "papaparse";
 import { useRef, useState } from "react";
 import type { CardDraft, ColumnMapping } from "@/lib/types";
@@ -20,8 +20,11 @@ const FIELDS: { key: keyof ColumnMapping; label: string; required: boolean }[] =
   { key: "pinyin", label: "Pinyin", required: false },
   { key: "english", label: "English", required: false },
   { key: "imageUrl", label: "Image URL", required: false },
-  { key: "deck", label: "Deck / Category", required: false },
+  { key: "deck", label: "Deck", required: false },
 ];
+
+const fieldClass =
+  "w-full border border-ink-200 bg-paper-bright px-3 py-2.5 text-ink-900 outline-none transition focus:border-cinnabar-500";
 
 export default function ImportModal({
   open,
@@ -130,19 +133,15 @@ export default function ImportModal({
               onFileChosen(e.dataTransfer.files);
             }}
             onClick={() => fileInputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition ${
+            className={`flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-16 text-center transition ${
               dragging
-                ? "border-sky-400 bg-sky-50"
-                : "border-sky-200 bg-sky-50/40 hover:border-sky-300 hover:bg-sky-50"
+                ? "border-cinnabar-500 bg-cinnabar-50"
+                : "border-ink-300 hover:border-ink-800"
             }`}
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-100 text-sky-500">
-              <UploadCloud className="h-8 w-8" />
-            </div>
-            <p className="font-semibold text-sky-800">
-              Drop your CSV here, or click to browse
-            </p>
-            <p className="text-sm text-sky-500">
+            <UploadCloud className="h-8 w-8 text-ink-300" strokeWidth={1.5} />
+            <p className="text-ink-800">Drop your CSV here, or click to browse</p>
+            <p className="text-sm text-ink-400">
               Columns can be in any order — we&apos;ll detect them for you.
             </p>
             <input
@@ -154,18 +153,19 @@ export default function ImportModal({
             />
           </div>
 
-          <div className="rounded-2xl border border-sky-100 bg-white/60 px-4 py-3 text-sm text-sky-700">
-            <p className="mb-1 font-semibold">Expected columns</p>
-            <p className="text-sky-500">
+          <div className="border-l-2 border-ink-200 pl-4">
+            <p className="label-caps mb-1 text-ink-400">Expected columns</p>
+            <p className="text-sm text-ink-500">
               Hanzi, Pinyin, English, Image URL, Deck. Only Hanzi (or English) is
               required. Numbered pinyin like{" "}
-              <code className="rounded bg-sky-100 px-1">ni3 hao3</code> converts
-              to <span className="font-hanzi">nǐ hǎo</span> automatically.
+              <span className="text-ink-800">ni3 hao3</span> converts to{" "}
+              <span className="font-serif italic text-cinnabar-500">nǐ hǎo</span>{" "}
+              automatically.
             </p>
           </div>
 
           {error && (
-            <p className="rounded-lg bg-coral-500/10 px-3 py-2 text-sm font-medium text-coral-600">
+            <p className="border-l-2 border-cinnabar-500 bg-cinnabar-50 px-3 py-2 text-sm text-cinnabar-700">
               {error}
             </p>
           )}
@@ -174,14 +174,13 @@ export default function ImportModal({
 
       {step === "map" && (
         <div className="flex flex-col gap-5">
-          {/* Mapping controls */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {FIELDS.map((field) => (
               <div key={field.key}>
-                <label className="mb-1.5 block text-sm font-semibold text-sky-800">
+                <label className="label-caps mb-1.5 block text-ink-400">
                   {field.label}
                   {field.required && (
-                    <span className="ml-1 text-coral-500">*</span>
+                    <span className="ml-1 text-cinnabar-500">*</span>
                   )}
                 </label>
                 <select
@@ -189,7 +188,7 @@ export default function ImportModal({
                   onChange={(e) =>
                     setMapping((m) => ({ ...m, [field.key]: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-sky-100 bg-sky-50/50 px-3 py-2.5 text-slate-800 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-200"
+                  className={fieldClass}
                 >
                   <option value="">— Not mapped —</option>
                   {headers.map((h) => (
@@ -203,64 +202,50 @@ export default function ImportModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-sky-800">
+            <label className="label-caps mb-1.5 block text-ink-400">
               Default deck name
-              <span className="ml-1 font-normal text-sky-400">
-                (used when a row has no deck)
-              </span>
             </label>
             <input
               value={fallbackDeck}
               onChange={(e) => setFallbackDeck(e.target.value)}
-              className="w-full rounded-xl border border-sky-100 bg-sky-50/50 px-4 py-2.5 text-slate-800 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-200"
+              className={fieldClass}
             />
           </div>
 
           {!mapping.hanzi && !mapping.english && (
-            <p className="rounded-lg bg-coral-500/10 px-3 py-2 text-sm font-medium text-coral-600">
+            <p className="border-l-2 border-cinnabar-500 bg-cinnabar-50 px-3 py-2 text-sm text-cinnabar-700">
               Map at least a Hanzi or English column to continue.
             </p>
           )}
 
-          {/* Preview */}
           <div>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-semibold text-sky-800">
-                Preview
-                <span className="ml-1.5 font-normal text-sky-400">
-                  {drafts.length} card{drafts.length === 1 ? "" : "s"}
-                </span>
-              </p>
-            </div>
-            <div className="overflow-x-auto thin-scroll rounded-2xl border border-sky-100">
+            <p className="label-caps mb-2 text-ink-400">
+              Preview · {drafts.length} card{drafts.length === 1 ? "" : "s"}
+            </p>
+            <div className="overflow-x-auto thin-scroll border border-ink-200">
               <table className="w-full min-w-[520px] border-collapse text-left text-sm">
                 <thead>
-                  <tr className="bg-gradient-to-r from-sky-50 to-blue-50 text-sky-700">
-                    <th className="px-3 py-2.5 font-semibold">Hanzi</th>
-                    <th className="px-3 py-2.5 font-semibold">Pinyin</th>
-                    <th className="px-3 py-2.5 font-semibold">English</th>
-                    <th className="px-3 py-2.5 font-semibold">Deck</th>
+                  <tr className="border-b border-ink-200 bg-ink-50">
+                    <th className="label-caps px-3 py-2.5 text-ink-400">Hanzi</th>
+                    <th className="label-caps px-3 py-2.5 text-ink-400">Pinyin</th>
+                    <th className="label-caps px-3 py-2.5 text-ink-400">English</th>
+                    <th className="label-caps px-3 py-2.5 text-ink-400">Deck</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-ink-100">
                   {drafts.slice(0, 8).map((d, i) => (
-                    <tr
-                      key={i}
-                      className="border-t border-sky-50 odd:bg-white even:bg-sky-50/30"
-                    >
-                      <td className="px-3 py-2 font-hanzi text-base text-slate-800">
+                    <tr key={i}>
+                      <td className="px-3 py-2 font-hanzi text-base text-ink-900">
                         {d.hanzi || "—"}
                       </td>
-                      <td className="px-3 py-2 text-sky-600">
+                      <td className="px-3 py-2 font-serif italic text-cinnabar-500">
                         {d.pinyin || "—"}
                       </td>
-                      <td className="px-3 py-2 text-slate-600">
+                      <td className="px-3 py-2 text-ink-600">
                         {d.english || "—"}
                       </td>
-                      <td className="px-3 py-2">
-                        <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-600">
-                          {d.deck}
-                        </span>
+                      <td className="label-caps px-3 py-2 text-ink-400">
+                        {d.deck}
                       </td>
                     </tr>
                   ))}
@@ -268,14 +253,14 @@ export default function ImportModal({
               </table>
             </div>
             {drafts.length > 8 && (
-              <p className="mt-2 text-center text-xs text-sky-400">
+              <p className="mt-2 text-center text-xs text-ink-400">
                 …and {drafts.length - 8} more
               </p>
             )}
           </div>
 
           {error && (
-            <p className="rounded-lg bg-coral-500/10 px-3 py-2 text-sm font-medium text-coral-600">
+            <p className="border-l-2 border-cinnabar-500 bg-cinnabar-50 px-3 py-2 text-sm text-cinnabar-700">
               {error}
             </p>
           )}
@@ -283,17 +268,15 @@ export default function ImportModal({
           <div className="flex gap-3">
             <button
               onClick={() => setStep("upload")}
-              className="flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-3 font-semibold text-sky-600 transition hover:bg-sky-50"
+              className="border border-ink-200 px-4 py-3 text-sm font-medium text-ink-600 transition hover:border-ink-800 hover:text-ink-900"
             >
-              <FileUp className="h-5 w-5" />
               Choose another
             </button>
             <button
               onClick={handleConfirm}
               disabled={drafts.length === 0}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-3 font-semibold text-white shadow-lg shadow-sky-300/50 transition hover:bg-sky-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 border border-ink-800 bg-ink-900 px-4 py-3 text-sm font-medium text-paper transition hover:bg-ink-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <CheckCircle2 className="h-5 w-5" />
               Import {drafts.length} card{drafts.length === 1 ? "" : "s"}
             </button>
           </div>

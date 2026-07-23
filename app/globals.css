@@ -11,9 +11,14 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+::selection {
+  background: #e8c3ba;
+  color: #141310;
+}
+
 /* 3D flip primitives for the flashcard */
 .flip-perspective {
-  perspective: 1600px;
+  perspective: 1800px;
 }
 
 .flip-inner {
@@ -21,7 +26,7 @@ body {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .flip-inner.is-flipped {
@@ -41,14 +46,21 @@ body {
   transform: rotateY(180deg);
 }
 
-/* Custom scrollbar for preview tables */
+/* Small-caps editorial label used for deck names and section headings */
+.label-caps {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 500;
+}
+
 .thin-scroll::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
+  height: 6px;
+  width: 6px;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #bae6fd;
-  border-radius: 9999px;
+  background: #ded7c7;
+  border-radius: 0;
 }
 .thin-scroll::-webkit-scrollbar-track {
   background: transparent;

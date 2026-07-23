@@ -1,7 +1,5 @@
 "use client";
 
-import { Layers } from "lucide-react";
-
 interface DeckSelectorProps {
   decks: string[];
   active: string;
@@ -9,7 +7,7 @@ interface DeckSelectorProps {
   onSelect: (deck: string) => void;
 }
 
-export const ALL_DECKS = "All Decks";
+export const ALL_DECKS = "All decks";
 
 export default function DeckSelector({
   decks,
@@ -20,29 +18,29 @@ export default function DeckSelector({
   const options = [ALL_DECKS, ...decks];
 
   return (
-    <div className="flex gap-2 overflow-x-auto thin-scroll pb-1">
+    <div className="flex gap-6 overflow-x-auto thin-scroll border-b border-ink-200">
       {options.map((deck) => {
         const isActive = deck === active;
-        const count = deck === ALL_DECKS ? counts[ALL_DECKS] : counts[deck];
+        const count = counts[deck] ?? 0;
         return (
           <button
             key={deck}
             onClick={() => onSelect(deck)}
-            className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              isActive
-                ? "border-sky-500 bg-sky-500 text-white shadow-md shadow-sky-300/50"
-                : "border-sky-100 bg-white/70 text-sky-600 hover:border-sky-300 hover:bg-white"
+            className={`group relative shrink-0 whitespace-nowrap pb-2.5 pt-1 text-sm transition ${
+              isActive ? "text-ink-900" : "text-ink-400 hover:text-ink-700"
             }`}
           >
-            {deck === ALL_DECKS && <Layers className="h-4 w-4" />}
             {deck}
             <span
-              className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${
-                isActive ? "bg-white/25 text-white" : "bg-sky-100 text-sky-600"
+              className={`ml-1.5 font-serif text-xs ${
+                isActive ? "text-cinnabar-500" : "text-ink-300"
               }`}
             >
-              {count ?? 0}
+              {count}
             </span>
+            {isActive && (
+              <span className="absolute -bottom-px left-0 right-0 h-[2px] bg-cinnabar-500" />
+            )}
           </button>
         );
       })}
